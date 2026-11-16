@@ -88,26 +88,27 @@ export class AnthropicGenerator implements NameGenerator {
 
 export function mapAnthropicError(error: unknown): GenerationError {
   if (error instanceof GenerationError) return error;
+  const detail = error instanceof Anthropic.APIError ? `${error.status ?? 'network'}: ${error.message}`.slice(0, 300) : undefined;
   if (error instanceof Anthropic.APIUserAbortError) {
-    return new GenerationError(499, 'cancelled', 'The request was cancelled.', true);
+    return new GenerationError(499, 'cancelled', 'The request was cancelled.', true, detail);
   }
   if (error instanceof Anthropic.APIConnectionTimeoutError) {
-    return new GenerationError(504, 'ai_timeout', 'The AI took too long to answer. Please try again.', true);
+    return new GenerationError(504, 'ai_timeout', 'The AI took too long to answer. Please try again.', true, detail);
   }
   if (error instanceof Anthropic.RateLimitError) {
-    return new GenerationError(503, 'ai_busy', 'The AI is busy right now. Please try again in a moment.', true);
+    return new GenerationError(503, 'ai_busy', 'The AI is busy right now. Please try again in a moment.', true, detail);
   }
   if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) {
-    return new GenerationError(502, 'ai_misconfigured', "The server's AI key was rejected. Ask the site owner to check it.", false);
+    return new GenerationError(502, 'ai_misconfigured', "The server's AI key was rejected. Ask the site owner to check it.", false, detail);
   }
   if (error instanceof Anthropic.BadRequestError || error instanceof Anthropic.NotFoundError) {
-    return new GenerationError(502, 'ai_request_failed', 'The AI could not process this request. Please try demo mode.', false);
+    return new GenerationError(502, 'ai_request_failed', 'The AI could not process this request. Please try demo mode.', false, detail);
   }
   if (error instanceof Anthropic.APIConnectionError) {
-    return new GenerationError(503, 'ai_unreachable', "We couldn't reach the AI service. Please try again.", true);
+    return new GenerationError(503, 'ai_unreachable', "We couldn't reach the AI service. Please try again.", true, detail);
   }
   if (error instanceof Anthropic.APIError) {
-    return new GenerationError(503, 'ai_unavailable', 'The AI service had a problem. Please try again.', true);
+    return new GenerationError(503, 'ai_unavailable', 'The AI service had a problem. Please try again.', true, detail);
   }
-  return new GenerationError(500, 'internal', 'Something went wrong on our side. Please try again.', true);
+  return new GenerationError(500, 'internal', 'Something went wrong on our side. Please try again.', true, detail);
 }

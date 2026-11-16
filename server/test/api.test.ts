@@ -124,10 +124,11 @@ describe('POST /api/generate', () => {
   });
 
   it('maps provider failures to retryable errors', async () => {
-    const ai = new FakeAi([new GenerationError(503, 'ai_busy', 'Busy.', true)]);
+    const ai = new FakeAi([new GenerationError(503, 'ai_busy', 'Busy.', true, '529: upstream secret detail')]);
     const res = await request(setup(ai)).post('/api/generate').send({ brief: SAMPLE_BRIEF });
     expect(res.status).toBe(503);
     expect(res.body.error).toEqual({ code: 'ai_busy', message: 'Busy.', retryable: true });
+    expect(JSON.stringify(res.body)).not.toContain('upstream secret detail');
   });
 
   it('lets the client force demo mode', async () => {

@@ -135,7 +135,7 @@ export function createApp(config: Config, deps: AppDeps) {
     } catch (error) {
       const err = toGenerationError(error);
       if (controller.signal.aborted || res.headersSent) return;
-      log('generate failed', { code: err.code, ms: Date.now() - started });
+      log('generate failed', { code: err.code, detail: err.detail, ms: Date.now() - started });
       sendError(res, err.status, err.code, err.message, err.retryable);
     }
   });

@@ -14,6 +14,8 @@ export class GenerationError extends Error {
     readonly code: string,
     message: string,
     readonly retryable: boolean,
+    /** Upstream detail for the server log only. Never sent to the browser. */
+    readonly detail?: string,
   ) {
     super(message);
     this.name = 'GenerationError';
