@@ -260,6 +260,10 @@ Keep `STORE_ADDR` on `127.0.0.1` and set the same `STORE_TOKEN` for both process
 
 ## Deploy to Netlify
 
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/SumitDendage/name-history-#ANTHROPIC_API_KEY=&DEMO_FALLBACK=on&AI_TIMEOUT_MS=45000)
+
+The button creates a Netlify site from this repo and asks for the variables below (leave `ANTHROPIC_API_KEY` empty for a demo-only site). To deploy an existing Netlify project instead, link it to this GitHub repo in the project's settings; every push to `main` then redeploys.
+
 The repo deploys to Netlify as-is: `netlify.toml` builds the React app to `client/dist`, and `netlify/functions/` serves `/api/generate`, `/api/health` and `/api/history` with the same handlers the Express server uses. Netlify enforces 20 generations per minute per IP before the function runs.
 
 Set these as site environment variables with the **Functions** scope (Site configuration > Environment variables). Values in `netlify.toml` don't reach functions.
