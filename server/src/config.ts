@@ -29,6 +29,8 @@ export interface Config {
   effort: Effort;
   demo: DemoSetting;
   demoLatencyMs: number;
+  /** Serve clearly labelled demo names when the AI call fails, instead of an error. */
+  demoFallback: boolean;
   aiTimeoutMs: number;
   rateLimitPerMinute: number;
   trustProxy: string | number | boolean;
@@ -70,6 +72,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): Config {
     effort: EFFORTS.includes(effortRaw) ? effortRaw : 'low',
     demo,
     demoLatencyMs: int(env.DEMO_LATENCY_MS, 1200, 0, 10_000),
+    demoFallback: ['on', 'true', '1'].includes((env.DEMO_FALLBACK ?? 'off').trim().toLowerCase()),
     aiTimeoutMs: int(env.AI_TIMEOUT_MS, 60_000, 5_000, 300_000),
     rateLimitPerMinute: int(env.RATE_LIMIT_PER_MINUTE, 20, 1, 10_000),
     trustProxy: trustProxy(env.TRUST_PROXY),

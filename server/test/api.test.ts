@@ -184,3 +184,44 @@ describe('other routes', () => {
     expect(res.body.error.code).toBe('not_found');
   });
 });
+
+describe('serverless behaviour', () => {
+  it('falls back to labelled demo names when the AI fails and DEMO_FALLBACK=on', async () => {
+    const ai = new FakeAi([new GenerationError(502, 'ai_request_failed', 'Could not process.', false, '400: credit balance too low')]);
+    const res = await request(setup(ai, { DEMO_FALLBACK: 'on' })).post('/api/generate').send({ brief: SAMPLE_BRIEF });
+    expect(res.status).toBe(200);
+    expect(res.body.mode).toBe('demo');
+    expect(res.body.fallback).toBe(true);
+    expect(res.body.returned).toBe(12);
+    expect(JSON.stringify(res.body)).not.toContain('credit balance');
+  });
+
+  it('keeps returning the error when DEMO_FALLBACK is off', async () => {
+    const ai = new FakeAi([new GenerationError(502, 'ai_request_failed', 'Could not process.', false)]);
+    const res = await request(setup(ai)).post('/api/generate').send({ brief: SAMPLE_BRIEF });
+    expect(res.status).toBe(502);
+    expect(res.body.error.code).toBe('ai_request_failed');
+  });
+
+  it('skips the top-up round when the deadline is close and returns what passed', async () => {
+    const { createHandlers } = await import('../src/handlers');
+    const config = readConfig({ CLIENT_DIST: '/nonexistent' } as NodeJS.ProcessEnv);
+    config.demoByDefault = false;
+    const ai = new FakeAi([names(['Lumora', 'Tarasol', 'Nilaa']), names(TWELVE)]);
+    const handlers = createHandlers(config, { ai, demo: new DemoGenerator(0), store: null });
+    const result = await handlers.generate(
+      { brief: SAMPLE_BRIEF },
+      { signal: new AbortController().signal, clientId: null, deadlineAt: Date.now() + 5_000 },
+    );
+    expect(result.status).toBe(200);
+    expect(ai.calls).toHaveLength(1);
+    expect((result.body as { returned: number }).returned).toBe(3);
+  });
+
+  it('accepts only UUID client ids', async () => {
+    const { parseClientId } = await import('../src/handlers');
+    expect(parseClientId('3F1C2A5E-8B7D-4C1E-9A2B-1234567890AB')).toBe('3f1c2a5e-8b7d-4c1e-9a2b-1234567890ab');
+    expect(parseClientId('../../etc')).toBeNull();
+    expect(parseClientId(undefined)).toBeNull();
+  });
+});

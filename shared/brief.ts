@@ -129,6 +129,8 @@ export interface GenerateResponse {
   likeName: string | null;
   notes: string[];
   createdAt: string;
+  /** True when the AI failed and the server served demo names instead (DEMO_FALLBACK=on). */
+  fallback?: boolean;
 }
 
 export interface ApiIssue {

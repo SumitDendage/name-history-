@@ -185,8 +185,10 @@ export function Results(props: Props) {
             </p>
             {result.mode === 'demo' && (
               <p className="demo-banner">
-                <strong>Demo mode</strong> These sample names come from a local generator, not AI. Add an{' '}
-                <code>ANTHROPIC_API_KEY</code> on the server for real suggestions.
+                <strong>Demo mode</strong>
+                {result.fallback
+                  ? 'The AI is unavailable right now, so these sample names come from a local generator. Try again later for AI suggestions.'
+                  : 'These sample names come from a local generator, not AI.'}
               </p>
             )}
             {result.notes.map((note) => (

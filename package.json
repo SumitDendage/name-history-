@@ -17,10 +17,11 @@
     "build": "npm run build -w client && npm run build -w server",
     "start": "npm run start -w server",
     "test": "npm test -w server && npm test -w client",
-    "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w client && tsc --noEmit -p netlify/tsconfig.json",
     "check": "npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
+    "@netlify/functions": "^6.1.1",
     "concurrently": "^10.0.7"
   }
 }

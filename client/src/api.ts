@@ -52,6 +52,9 @@ async function request<T>(path: string, init: RequestInit & { clientId?: string 
   if (!res.ok) {
     const err = (body as ApiErrorBody | null)?.error;
     if (err) throw new ApiError(err.code, err.message, err.retryable, res.status, err.issues);
+    if (res.status === 429) {
+      throw new ApiError('rate_limited', 'You are generating names very quickly. Please wait a minute and try again.', true, 429);
+    }
     throw new ApiError('http_error', `The server answered with an error (${res.status}). Please try again.`, res.status >= 500, res.status);
   }
   if (body === null) throw new ApiError('bad_response', 'The server sent an empty answer. Please try again.', true, res.status);

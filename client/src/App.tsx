@@ -295,7 +295,7 @@ export function App() {
       </div>
 
       <Header
-        health={health}
+        health={health && result ? { ...health, mode: result.mode } : health}
         savedCount={favourites.length}
         drawerOpen={drawerOpen}
         onOpenDrawer={() => setDrawerOpen(true)}

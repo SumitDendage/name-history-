@@ -43,6 +43,7 @@ NameForge AI is a cinematic AI naming studio for clients in India and around the
 | AI | **Anthropic Claude** (`claude-opus-5-5` by default) via `@anthropic-ai/sdk` | Structured JSON output, configurable effort, and server-side refusal fallbacks. The key stays on the server. |
 | Store | **Rust (Axum 0.8 + Tokio) + SQLite (rusqlite, bundled)** | A tiny, fast, single-binary service with an embedded database. No database server to run. |
 | Tests | Vitest + Supertest, `cargo test`, Playwright (manual e2e) | Unit and HTTP tests for the rules engine, API and store. |
+| Hosting | **Netlify** (static site + Netlify Functions), or any Node host | The same API handlers run in Express and in Netlify Functions. |
 | CI | GitHub Actions | Typecheck, test and build the web app; fmt, clippy and test the store. |
 
 ## Architecture
@@ -114,6 +115,7 @@ All settings live in `.env` (see [`.env.example`](.env.example)). Real environme
 | `ANTHROPIC_MODEL` | `claude-opus-5-5` | Model used for naming. |
 | `ANTHROPIC_EFFORT` | `low` | `low`, `medium`, `high`, `xhigh` or `max`. Higher is slower and more considered. |
 | `DEMO_MODE` | `auto` | `auto` (demo without a key), `on` (always demo) or `off` (never; 503 without a key). |
+| `DEMO_FALLBACK` | `off` | `on` serves clearly labelled demo names when the AI call fails (outage, no credit) instead of an error. The reason goes to the server log. |
 | `DEMO_LATENCY_MS` | `1200` | Simulated delay in demo mode so the animation can play. |
 | `AI_TIMEOUT_MS` | `60000` | Per-request timeout for the AI call. |
 | `RATE_LIMIT_PER_MINUTE` | `20` | `/api/generate` requests per IP per minute. |
@@ -256,6 +258,20 @@ STORE_DB_PATH=/var/lib/nameforge/nameforge.db ./store/target/release/nameforge-s
 
 Keep `STORE_ADDR` on `127.0.0.1` and set the same `STORE_TOKEN` for both processes.
 
+## Deploy to Netlify
+
+The repo deploys to Netlify as-is: `netlify.toml` builds the React app to `client/dist`, and `netlify/functions/` serves `/api/generate`, `/api/health` and `/api/history` with the same handlers the Express server uses. Netlify enforces 20 generations per minute per IP before the function runs.
+
+Set these as site environment variables with the **Functions** scope (Site configuration > Environment variables). Values in `netlify.toml` don't reach functions.
+
+| Variable | Suggested value |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | Your key, marked secret. Leave unset for a demo-only site. |
+| `DEMO_FALLBACK` | `on`, so visitors see labelled demo names rather than an error if the AI is unavailable. |
+| `AI_TIMEOUT_MS` | `45000` (Netlify synchronous functions stop at 60 s; the server also skips the top-up round when time is short). |
+
+Recent briefs need the Rust store, which is a long-running service and can't run on Netlify, so that tab stays hidden there. Run the store next to the Express server (see Production) if you want history.
+
 ## Project structure
 
 ```
@@ -271,9 +287,11 @@ nameforge-ai/
 │       ├── schema.ts       Zod request validation
 │       ├── rules.ts        rule derivation and enforcement
 │       ├── prompt.ts       system prompt, brief prompt, JSON schema
+│       ├── handlers.ts     framework-agnostic API handlers used by Express and Netlify
 │       ├── service.ts      over-generate, filter, top-up, respond
 │       ├── providers/      anthropic.ts (Claude), demo.ts (offline generator)
 │       └── store.ts        client for the Rust store
+├── netlify/                Netlify Functions (generate, health, history) wrapping the same handlers
 ├── shared/brief.ts         types and constants shared by client and server
 ├── store/                  Rust (Axum + SQLite) history service
 └── docs/screenshots/
