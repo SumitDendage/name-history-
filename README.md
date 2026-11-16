@@ -2,6 +2,8 @@
 
 **Find a name that fits what you’re building.**
 
+[![CI](https://github.com/SumitDendage/name-history-/actions/workflows/ci.yml/badge.svg)](https://github.com/SumitDendage/name-history-/actions/workflows/ci.yml)
+
 NameForge AI is a cinematic AI naming studio for clients in India and around the world. Describe what you're naming (a social account, gaming profile, personal brand, business, creator channel or project), pick a market and a style, and get **12 distinct names**, each with a one-line reason and checked against the rules you set.
 
 ![Hero](docs/screenshots/hero.webp)
@@ -64,11 +66,11 @@ flowchart LR
 **Prerequisites:** Node.js 20.12 or newer (22 recommended). Rust stable is only needed for the optional store.
 
 ```bash
-git clone https://github.com/<your-account>/nameforge-ai.git
+git clone https://github.com/SumitDendage/name-history-.git
 ```
 
 ```bash
-cd nameforge-ai
+cd name-history-
 ```
 
 ```bash
